@@ -17,9 +17,24 @@ export default function Footer() {
     }
     setSending(true)
     setError('')
-    // Simulación de envío (puedes conectar un servicio como Resend o Formspree)
-    await new Promise(r => setTimeout(r, 800))
-    setSent(true)
+    try {
+      const res = await fetch('https://formspree.io/f/xgodnogo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          nombre: form.nombre,
+          email:  form.email,
+          mensaje: form.mensaje,
+        }),
+      })
+      if (res.ok) {
+        setSent(true)
+      } else {
+        setError('Error al enviar. Inténtalo de nuevo.')
+      }
+    } catch {
+      setError('Error de conexión. Inténtalo de nuevo.')
+    }
     setSending(false)
   }
 
