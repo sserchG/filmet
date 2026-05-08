@@ -20,15 +20,24 @@ export default function Header() {
   const fileRef                     = useRef(null)
   const searchInputRef              = useRef(null)
 
-  async function loadProfile(userId) {
+  async function loadProfile(userId, userMeta) {
     const { data } = await supabase
       .from('profiles')
       .select('username, avatar_url')
       .eq('id', userId)
       .single()
     if (data) {
-      setUsername(data.username || '')
+      // Usar username del perfil, o del metadata como fallback
+      setUsername(data.username || userMeta?.username || '')
       setAvatarUrl(data.avatar_url || null)
+      // Si el perfil existe pero sin username, actualizarlo con el metadata
+      if (!data.username && userMeta?.username) {
+        await supabase.from('profiles').upsert({ id: userId, username: userMeta.username }, { onConflict: 'id' })
+      }
+    } else if (userMeta?.username) {
+      // No hay perfil, crearlo con el username del metadata
+      setUsername(userMeta.username)
+      await supabase.from('profiles').upsert({ id: userId, username: userMeta.username }, { onConflict: 'id' })
     }
   }
 
@@ -45,11 +54,11 @@ export default function Header() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
-      if (session?.user) { loadProfile(session.user.id); loadStats(session.user.id) }
+      if (session?.user) { loadProfile(session.user.id, session.user.user_metadata); loadStats(session.user.id) }
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
-      if (session?.user) { loadProfile(session.user.id); loadStats(session.user.id) }
+      if (session?.user) { loadProfile(session.user.id, session.user.user_metadata); loadStats(session.user.id) }
       else { setUsername(''); setAvatarUrl(null); setStats(null) }
     })
     return () => subscription.unsubscribe()

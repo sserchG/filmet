@@ -25,13 +25,18 @@ export default function LoginPage() {
       if (error) setError('Email o contraseña incorrectos')
       else router.push('/')
     } else {
-      const { data, error } = await supabase.auth.signUp({ email, password })
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { username } }, // guardado en auth metadata como fallback
+      })
       if (error) {
         setError('Error al crear la cuenta: ' + error.message)
       } else {
         const user = data.user
         if (user) {
-          await supabase.from('profiles').insert({ id: user.id, username })
+          // upsert por si ya existe el perfil
+          await supabase.from('profiles').upsert({ id: user.id, username }, { onConflict: 'id' })
         }
         setSuccess('Cuenta creada. Revisa tu email para confirmarla.')
       }

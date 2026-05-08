@@ -12,6 +12,7 @@ export default function MovieActions({ movie }) {
   const [showRating, setShowRating] = useState(false)
   const [loading, setLoading]     = useState(false)
   const [hoverRating, setHoverRating] = useState(null)
+  const [feedback, setFeedback]   = useState('')
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -27,25 +28,43 @@ export default function MovieActions({ movie }) {
     if (data) { setStatus(data.status); setRating(data.rating) }
   }
 
-  async function saveMovie(newStatus) {
-    if (!user) return router.push('/login')
-    setLoading(true)
-    await supabase.from('movies').upsert({
+  async function upsertMovie() {
+    return supabase.from('movies').upsert({
       id: movie.id, title: movie.title,
       poster_path: movie.poster_path, backdrop_path: movie.backdrop_path,
       overview: movie.overview, release_date: movie.release_date,
       vote_average: movie.vote_average,
     })
+  }
+
+  async function saveMovie(newStatus) {
+    if (!user) return router.push('/login')
+    setLoading(true)
+    setFeedback('')
+
+    const { error: movieErr } = await upsertMovie()
+    if (movieErr) {
+      console.error('Error guardando película:', movieErr)
+      setFeedback('Error al guardar. ¿Has confirmado tu email?')
+      setLoading(false)
+      return
+    }
+
     if (status === newStatus) {
-      await supabase.from('user_movies').delete()
+      const { error } = await supabase.from('user_movies').delete()
         .eq('user_id', user.id).eq('movie_id', movie.id)
-      setStatus(null)
+      if (!error) setStatus(null)
     } else {
-      await supabase.from('user_movies').upsert({
+      const { error } = await supabase.from('user_movies').upsert({
         user_id: user.id, movie_id: movie.id,
         status: newStatus, rating,
       })
-      setStatus(newStatus)
+      if (error) {
+        console.error('Error en user_movies:', error)
+        setFeedback('Error al guardar el estado.')
+      } else {
+        setStatus(newStatus)
+      }
     }
     setLoading(false)
   }
@@ -53,19 +72,26 @@ export default function MovieActions({ movie }) {
   async function saveRating(stars) {
     if (!user) return router.push('/login')
     setLoading(true)
-    await supabase.from('movies').upsert({
-      id: movie.id, title: movie.title,
-      poster_path: movie.poster_path, backdrop_path: movie.backdrop_path,
-      overview: movie.overview, release_date: movie.release_date,
-      vote_average: movie.vote_average,
-    })
-    await supabase.from('user_movies').upsert({
+    setFeedback('')
+
+    const { error: movieErr } = await upsertMovie()
+    if (movieErr) {
+      setFeedback('Error al guardar. ¿Has confirmado tu email?')
+      setLoading(false)
+      return
+    }
+
+    const { error } = await supabase.from('user_movies').upsert({
       user_id: user.id, movie_id: movie.id,
       status: status || 'watched', rating: stars,
     })
-    setRating(stars)
-    setStatus(prev => prev || 'watched')
-    setShowRating(false)
+    if (error) {
+      setFeedback('Error al guardar la puntuación.')
+    } else {
+      setRating(stars)
+      setStatus(prev => prev || 'watched')
+      setShowRating(false)
+    }
     setLoading(false)
   }
 
@@ -119,6 +145,13 @@ export default function MovieActions({ movie }) {
           onClick={() => setShowRating(v => !v)}
         />
       </div>
+
+      {/* Feedback error */}
+      {feedback && (
+        <p style={{ color: '#e05c5c', fontSize: '0.78rem', marginTop: '0.6rem' }}>
+          ⚠ {feedback}
+        </p>
+      )}
 
       {/* Rating panel */}
       {showRating && (
