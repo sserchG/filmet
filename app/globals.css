@@ -163,5 +163,5 @@ body::after {
 
 @media (max-width: 480px) {
   .header-logo { font-size: 1.1rem !important; }
-  .header-inner { padding: 0 1rem !important; }
+  .header-inner { padding: 0 1rem !important; grid-template-columns: auto 1fr !important; }
 }

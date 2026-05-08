@@ -96,7 +96,7 @@ export default function MovieActions({ movie }) {
     const { error } = await supabase.from('user_movies').upsert({
       user_id: user.id, movie_id: movie.id,
       status: status || 'watched', rating: stars,
-    })
+    }, { onConflict: 'user_id,movie_id' })
     if (error) {
       setFeedback('Error al guardar la puntuación.')
     } else {

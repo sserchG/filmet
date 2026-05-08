@@ -203,9 +203,9 @@ export default function Header() {
     <header className="header-inner" style={{
       padding: '0 2.5rem',
       height: '64px',
-      display: 'flex',
+      display: 'grid',
+      gridTemplateColumns: '1fr auto 1fr',
       alignItems: 'center',
-      justifyContent: 'space-between',
       position: 'fixed',
       top: 0, left: 0, right: 0,
       background: 'rgba(10,10,15,0.88)',
@@ -213,14 +213,14 @@ export default function Header() {
       borderBottom: '1px solid var(--border)',
       zIndex: 100,
     }}>
-      {/* Logo */}
+      {/* Logo — columna izquierda */}
       <Link href="/" style={{ textDecoration: 'none' }}>
         <span className="font-display header-logo" style={{ fontSize: '1.4rem', color: 'var(--text)', letterSpacing: '0.14em' }}>
           FILMET
         </span>
       </Link>
 
-      {/* Nav links — hidden on mobile */}
+      {/* Nav links — columna central, siempre centrada */}
       <nav className="nav-links" style={{ display: 'flex', gap: '0.1rem', alignItems: 'center' }}>
         {navLinks.map(([href, label]) => {
           const isActive = pathname === href
@@ -241,8 +241,8 @@ export default function Header() {
         })}
       </nav>
 
-      {/* Right side — always visible */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      {/* Right side — columna derecha, alineada a la derecha */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-end' }}>
 
         {/* Search bar pill */}
         <button
