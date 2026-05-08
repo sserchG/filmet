@@ -136,9 +136,11 @@ body::after {
 @media (max-width: 768px) {
   /* Header nav links hidden on mobile */
   .nav-links { display: none !important; }
-  .header-search-pill { min-width: 120px !important; }
+  /* Search pill compacto en móvil */
+  .header-search-pill { min-width: unset !important; padding: 0.38rem 0.75rem !important; }
   .header-search-text { display: none !important; }
   .header-search-kbd  { display: none !important; }
+  .header-divider     { display: none !important; }
 
   /* Hero sections */
   .hero-section { height: 55vh !important; min-height: 320px; }

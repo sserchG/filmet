@@ -199,7 +199,7 @@ export default function Header() {
         </span>
       </Link>
 
-      {/* Nav */}
+      {/* Nav links — hidden on mobile */}
       <nav className="nav-links" style={{ display: 'flex', gap: '0.1rem', alignItems: 'center' }}>
         {navLinks.map(([href, label]) => {
           const isActive = pathname === href
@@ -218,6 +218,10 @@ export default function Header() {
             </Link>
           )
         })}
+      </nav>
+
+      {/* Right side — always visible */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
 
         {/* Search bar pill */}
         <button
@@ -231,7 +235,6 @@ export default function Header() {
             padding: '0.38rem 1rem 0.38rem 0.75rem',
             cursor: 'pointer',
             transition: 'border-color 0.2s, background 0.2s',
-            marginRight: '0.25rem',
             minWidth: '180px',
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.35)'; e.currentTarget.style.background = 'var(--surface2)' }}
@@ -248,7 +251,7 @@ export default function Header() {
           }}>⏎</span>
         </button>
 
-        <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 0.75rem' }} />
+        <div className="header-divider" style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 0.25rem' }} />
 
         {/* Auth area */}
         {user ? (
@@ -382,7 +385,7 @@ export default function Header() {
             Entrar
           </Link>
         )}
-      </nav>
+      </div>
     </header>
 
     {/* ── SEARCH OVERLAY ── */}
