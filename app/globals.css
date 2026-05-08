@@ -134,7 +134,11 @@ body::after {
 
 /* ── RESPONSIVE ─────────────────────────────── */
 @media (max-width: 768px) {
-  /* Header nav links hidden on mobile */
+  /* Header: 2 columnas en móvil (logo izq, controles der) */
+  .header-inner {
+    grid-template-columns: auto 1fr !important;
+    padding: 0 1.2rem !important;
+  }
   .nav-links { display: none !important; }
   /* Search pill compacto en móvil */
   .header-search-pill { min-width: unset !important; padding: 0.38rem 0.75rem !important; }
@@ -162,6 +166,6 @@ body::after {
 }
 
 @media (max-width: 480px) {
-  .header-logo { font-size: 1.1rem !important; }
-  .header-inner { padding: 0 1rem !important; grid-template-columns: auto 1fr !important; }
+  .header-logo { font-size: 1rem !important; }
+  .header-inner { padding: 0 0.8rem !important; }
 }

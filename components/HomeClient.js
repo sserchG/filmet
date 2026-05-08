@@ -491,7 +491,7 @@ function UpcomingCarousel({ movies }) {
 
           {/* Right — poster flotante */}
           {movie.poster_path && (
-            <div style={{
+            <div className="upcoming-poster" style={{
               flexShrink: 0,
               position: 'relative', width: '200px', height: '300px',
               borderRadius: '14px', overflow: 'hidden',
