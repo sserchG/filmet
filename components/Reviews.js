@@ -2,36 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import leoProfanity from 'leo-profanity'
 
-// Filtro de palabras — incluye variantes con números y símbolos
-const BANNED_WORDS = [
-  'puta','puto','putas','putos','mierda','mierdas','joder','coño','hostia',
-  'gilipollas','gilipolla','idiota','imbécil','imbecil','capullo','cabrón',
-  'cabron','cabrona','hijo de puta','hdp','zorra','zorras','polla','pollas',
-  'fuck','shit','bitch','asshole','bastard','cunt','dick','faggot',
-]
-
-function normalize(text) {
-  return text
-    .toLowerCase()
-    .replace(/[àáâãäå]/g, 'a')
-    .replace(/[èéêë]/g, 'e')
-    .replace(/[ìíîï]/g, 'i')
-    .replace(/[òóôõö]/g, 'o')
-    .replace(/[ùúûü]/g, 'u')
-    .replace(/[ñ]/g, 'n')
-    .replace(/[ç]/g, 'c')
-    .replace(/[1!|]/g, 'i')
-    .replace(/[0@]/g, 'o')
-    .replace(/[3]/g, 'e')
-    .replace(/[4]/g, 'a')
-    .replace(/[5$]/g, 's')
-    .replace(/\s+/g, ' ')
-}
+// Añadir diccionario en español
+leoProfanity.loadDictionary('es')
+// Añadir palabras extra en español no incluidas en el diccionario
+leoProfanity.add([
+  'maricón', 'maricon', 'maricones', 'subnormal', 'subnormales',
+  'retrasado', 'retrasada', 'mongolo', 'mongola', 'inútil',
+  'hdp', 'hijo de puta', 'hija de puta', 'me cago',
+])
 
 function containsBannedWords(text) {
-  const normalized = normalize(text)
-  return BANNED_WORDS.some(word => normalized.includes(normalize(word)))
+  return leoProfanity.check(text)
 }
 
 export default function Reviews({ movieId }) {
