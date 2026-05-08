@@ -1,26 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a26;
+  --border: #ffffff12;
+  --text: #f0f0f0;
+  --muted: #8888a0;
+  --accent: #c9a84c;
+  --accent-hover: #e0c06a;
+  --accent-glow: rgba(201, 168, 76, 0.2);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  scrollbar-gutter: stable;
+}
+
+/* Film grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.028;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface2);
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+.font-display {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+/* Shared card image zoom */
+.movie-card img {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.movie-card:hover img {
+  transform: scale(1.07);
+}
+
+/* Keyframes */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+@keyframes scrollLine {
+  0%   { transform: scaleY(0) translateY(0);   opacity: 0; }
+  30%  { transform: scaleY(1) translateY(0);   opacity: 1; }
+  100% { transform: scaleY(1) translateY(24px); opacity: 0; }
+}
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+/* Scroll reveal */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Card hover base */
+.movie-card-hover {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.35s ease;
+}
+.movie-card-hover:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.7);
+}
+
+/* Hide scrollbar utility */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Upcoming carousel progress bar */
+@keyframes progressBar {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* ── RESPONSIVE ─────────────────────────────── */
+@media (max-width: 768px) {
+  /* Header nav links hidden on mobile */
+  .nav-links { display: none !important; }
+  .header-search-pill { min-width: 120px !important; }
+  .header-search-text { display: none !important; }
+  .header-search-kbd  { display: none !important; }
+
+  /* Hero sections */
+  .hero-section { height: 55vh !important; min-height: 320px; }
+
+  /* Movie detail: stack poster + info */
+  .movie-detail-flex { flex-direction: column !important; align-items: center !important; }
+  .movie-detail-poster { width: 160px !important; height: 240px !important; }
+
+  /* Upcoming carousel */
+  .upcoming-slide { height: 300px !important; }
+  .upcoming-poster { display: none !important; }
+
+  /* Section padding */
+  .section-pad { padding-left: 1rem !important; padding-right: 1rem !important; }
+
+  /* Popular featured card */
+  .featured-card { height: 300px !important; }
+  .featured-card-poster { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .header-logo { font-size: 1.1rem !important; }
+  .header-inner { padding: 0 1rem !important; }
 }
