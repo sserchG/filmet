@@ -61,7 +61,19 @@ export default function Header() {
       if (session?.user) { loadProfile(session.user.id, session.user.user_metadata); loadStats(session.user.id) }
       else { setUsername(''); setAvatarUrl(null); setStats(null) }
     })
-    return () => subscription.unsubscribe()
+
+    // Actualizar stats cuando se guarda una película
+    const handleStatsChange = () => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) loadStats(session.user.id)
+      })
+    }
+    window.addEventListener('filmet:stats-changed', handleStatsChange)
+
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('filmet:stats-changed', handleStatsChange)
+    }
   }, [])
 
   /* Cerrar dropdown al hacer click fuera */

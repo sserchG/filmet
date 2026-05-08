@@ -64,17 +64,18 @@ export default function MovieActions({ movie }) {
     if (status === newStatus) {
       const { error } = await supabase.from('user_movies').delete()
         .eq('user_id', user.id).eq('movie_id', movie.id)
-      if (!error) setStatus(null)
+      if (!error) { setStatus(null); window.dispatchEvent(new Event('filmet:stats-changed')) }
     } else {
       const { error } = await supabase.from('user_movies').upsert({
         user_id: user.id, movie_id: movie.id,
         status: newStatus, rating,
-      })
+      }, { onConflict: 'user_id,movie_id' })
       if (error) {
         console.error('Error en user_movies:', error)
         setFeedback('Error al guardar el estado.')
       } else {
         setStatus(newStatus)
+        window.dispatchEvent(new Event('filmet:stats-changed'))
       }
     }
     setLoading(false)
@@ -102,6 +103,7 @@ export default function MovieActions({ movie }) {
       setRating(stars)
       setStatus(prev => prev || 'watched')
       setShowRating(false)
+      window.dispatchEvent(new Event('filmet:stats-changed'))
     }
     setLoading(false)
   }

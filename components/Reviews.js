@@ -3,22 +3,42 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
-// Lista básica de palabras a filtrar
+// Filtro de palabras — incluye variantes con números y símbolos
 const BANNED_WORDS = [
-  'puta', 'puto', 'mierda', 'joder', 'coño', 'hostia', 'gilipollas',
-  'idiota', 'imbécil', 'capullo', 'cabrón', 'cabron', 'hijo de puta',
-  'fuck', 'shit', 'bitch', 'asshole', 'bastard', 'cunt',
+  'puta','puto','putas','putos','mierda','mierdas','joder','coño','hostia',
+  'gilipollas','gilipolla','idiota','imbécil','imbecil','capullo','cabrón',
+  'cabron','cabrona','hijo de puta','hdp','zorra','zorras','polla','pollas',
+  'fuck','shit','bitch','asshole','bastard','cunt','dick','faggot',
 ]
 
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .replace(/[àáâãäå]/g, 'a')
+    .replace(/[èéêë]/g, 'e')
+    .replace(/[ìíîï]/g, 'i')
+    .replace(/[òóôõö]/g, 'o')
+    .replace(/[ùúûü]/g, 'u')
+    .replace(/[ñ]/g, 'n')
+    .replace(/[ç]/g, 'c')
+    .replace(/[1!|]/g, 'i')
+    .replace(/[0@]/g, 'o')
+    .replace(/[3]/g, 'e')
+    .replace(/[4]/g, 'a')
+    .replace(/[5$]/g, 's')
+    .replace(/\s+/g, ' ')
+}
+
 function containsBannedWords(text) {
-  const lower = text.toLowerCase()
-  return BANNED_WORDS.some(word => lower.includes(word))
+  const normalized = normalize(text)
+  return BANNED_WORDS.some(word => normalized.includes(normalize(word)))
 }
 
 export default function Reviews({ movieId }) {
   const [reviews,  setReviews]  = useState([])
   const [user,     setUser]     = useState(null)
   const [username, setUsername] = useState('')
+  const [isAdmin,  setIsAdmin]  = useState(false)
   const [content,  setContent]  = useState('')
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState('')
@@ -30,7 +50,8 @@ export default function Reviews({ movieId }) {
       const meta = session.user.user_metadata
       // Cargar perfil, y crearlo si no existe
       const { data: profile } = await supabase
-        .from('profiles').select('username').eq('id', session.user.id).single()
+        .from('profiles').select('username, is_admin').eq('id', session.user.id).single()
+      if (profile?.is_admin) setIsAdmin(true)
       if (profile?.username) {
         setUsername(profile.username)
       } else {
@@ -202,18 +223,22 @@ export default function Reviews({ movieId }) {
                     {new Date(r.created_at).toLocaleDateString('es-ES')}
                   </span>
                 </div>
-                {user?.id === r.user_id && (
+                {(user?.id === r.user_id || isAdmin) && (
                   <button onClick={() => deleteReview(r.id)} style={{
                     background: 'transparent',
                     border: 'none',
-                    color: 'var(--muted)',
+                    color: isAdmin && user?.id !== r.user_id ? '#e05c5c' : 'var(--muted)',
                     cursor: 'pointer',
                     fontSize: '0.8rem',
                     transition: 'color 0.2s',
+                    display: 'flex', alignItems: 'center', gap: '0.3rem',
                   }}
                   onMouseEnter={e => e.currentTarget.style.color = '#e05c5c'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
-                  >Eliminar</button>
+                  onMouseLeave={e => e.currentTarget.style.color = isAdmin && user?.id !== r.user_id ? '#e05c5c' : 'var(--muted)'}
+                  >
+                    {isAdmin && user?.id !== r.user_id && <span style={{ fontSize: '0.65rem', opacity: 0.7 }}>🛡</span>}
+                    Eliminar
+                  </button>
                 )}
               </div>
               <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.6 }}>{r.content}</p>
