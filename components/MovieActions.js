@@ -16,8 +16,19 @@ export default function MovieActions({ movie }) {
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) loadUserMovie(session.user.id)
+      if (!session?.user) return
+      setUser(session.user)
+      // Asegurar que el perfil existe (evita FK violations)
+      const { data: profile } = await supabase
+        .from('profiles').select('id').eq('id', session.user.id).single()
+      if (!profile) {
+        const meta = session.user.user_metadata
+        await supabase.from('profiles').upsert(
+          { id: session.user.id, username: meta?.username || meta?.name || 'Usuario' },
+          { onConflict: 'id' }
+        )
+      }
+      loadUserMovie(session.user.id)
     })
   }, [])
 

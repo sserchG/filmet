@@ -24,11 +24,23 @@ export default function Reviews({ movieId }) {
   const [error,    setError]    = useState('')
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        supabase.from('profiles').select('username').eq('id', session.user.id).single()
-          .then(({ data }) => { if (data) setUsername(data.username || '') })
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return
+      setUser(session.user)
+      const meta = session.user.user_metadata
+      // Cargar perfil, y crearlo si no existe
+      const { data: profile } = await supabase
+        .from('profiles').select('username').eq('id', session.user.id).single()
+      if (profile?.username) {
+        setUsername(profile.username)
+      } else {
+        // Crear perfil con username del metadata
+        const fallbackUsername = meta?.username || meta?.name || 'Usuario'
+        await supabase.from('profiles').upsert(
+          { id: session.user.id, username: fallbackUsername },
+          { onConflict: 'id' }
+        )
+        setUsername(fallbackUsername)
       }
     })
     loadReviews()
