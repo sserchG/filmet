@@ -2,19 +2,49 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import leoProfanity from 'leo-profanity'
 
-// Añadir diccionario en español
-leoProfanity.loadDictionary('es')
-// Añadir palabras extra en español no incluidas en el diccionario
-leoProfanity.add([
-  'maricón', 'maricon', 'maricones', 'subnormal', 'subnormales',
-  'retrasado', 'retrasada', 'mongolo', 'mongola', 'inútil',
-  'hdp', 'hijo de puta', 'hija de puta', 'me cago',
-])
+const BANNED = [
+  // --- ESPAÑOL ---
+  'puta','putas','puto','putos','mierda','mierdas','joder','coño','hostia','hostias',
+  'gilipollas','gilipolla','imbecil','imbécil','capullo','capullos','cabrón','cabron',
+  'cabrona','cabronas','zorra','zorras','polla','pollas','hdp','me cago',
+  'hijo de puta','hija de puta','hijos de puta','hijo de p',
+  'maricón','maricon','maricones','subnormal','subnormales',
+  'retrasado','retrasada','retrasados','mongolo','mongola','mongólico',
+  'idiota','idiotas','estupido','estúpido','imbéciles','cretino','cretinos',
+  'prostituta','prostituto','pederasta','pedofilo','pedófilo',
+  'pendejo','pendeja','pelotudo','pelotuda','boludo','boluda','malparido','malparida',
+  'gonorrea','carechimba','culiao','culiado','weon','weón','huevón','pajero','pajera',
+  'verga','vergas','pito','pitos','tetas','teta','chocho','culo','culos',
+  'culazo','ojete','pajillero','lefa','follar','chingar','coger',
+  'mamar','mamada','sudaca','panchito','machorra','bollera','marica','feminazi',
+  'nazi','perra','malnacido','baboso','maldito','maldita',
+  // --- INGLÉS ---
+  'fuck','fucking','fucker','fucked','shit','bitch','bitches','asshole',
+  'bastard','cunt','dick','pussy','nigger','faggot','whore','motherfucker',
+  'cocksucker','douche','douchebag','prick','twat','wanker','tosser','scumbag',
+  'dipshit','dumbass','jackass','moron','bullshit',
+  'cum','porn','porno','blowjob','handjob','anal','tits','slut',
+  'bastards','dyke','kike','spic','nigga',
+  // --- VARIACIONES LEET ---
+  'pvt4','p.u.t.a','f*ck','sh*t','m1erd4','p0ll4','c0ñ0','4ssh0l3','b1tch',
+]
+
+function normalize(str) {
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // quita acentos
+    .replace(/[1!|]/g, 'i').replace(/[0@]/g, 'o')
+    .replace(/[3]/g, 'e').replace(/[4]/g, 'a').replace(/[5$]/g, 's')
+}
 
 function containsBannedWords(text) {
-  return leoProfanity.check(text)
+  const n = normalize(text)
+  return BANNED.some(word => {
+    const w = normalize(word)
+    // Buscar palabra completa o con espacios alrededor
+    const regex = new RegExp(`(^|\\s|[^a-z])${w}(\\s|[^a-z]|$)`)
+    return regex.test(n) || n === w
+  })
 }
 
 export default function Reviews({ movieId }) {
